@@ -1,4 +1,4 @@
-## Spectagram App
+## Spectagram App - Part 02
 
 > This is a simple react native app assigned to me by whitehatjr. 
 
