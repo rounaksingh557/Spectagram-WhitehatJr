@@ -8,7 +8,7 @@ import Profile from "../Screens/Profile";
 
 const Drawer = createDrawerNavigator();
 
-export default function DrawerNavigator() {
+const DrawerNavigator = () => {
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -19,4 +19,6 @@ export default function DrawerNavigator() {
       <Drawer.Screen name="Profile" component={Profile} />
     </Drawer.Navigator>
   );
-}
+};
+
+export default DrawerNavigator;

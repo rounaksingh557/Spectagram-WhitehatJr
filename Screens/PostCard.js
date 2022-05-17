@@ -1,6 +1,6 @@
 // Modules Import
 import React, { Component } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFValue } from "react-native-responsive-fontsize";
 
@@ -9,10 +9,17 @@ export default class PostCard extends Component {
     super(props);
     this.state = {};
   }
-
+ 
   render() {
     return (
-      <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.container}
+        onPress={() =>
+          this.props.navigation.navigate("PostScreen", {
+            post: this.props.post,
+          })
+        }
+      >
         <View style={styles.cardContainer}>
           <View style={styles.authorContainer}>
             <View style={styles.authorImageContainer}>
@@ -28,7 +35,7 @@ export default class PostCard extends Component {
             </View>
           </View>
           <Image
-            source={require("../assets/post.jpg")}
+            source={require("../assets/image_1.jpg")}
             style={styles.postImage}
           />
           <View style={styles.captionContainer}>
@@ -41,7 +48,7 @@ export default class PostCard extends Component {
             </View>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   }
 }

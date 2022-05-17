@@ -3,9 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
-  Platform,
-  StatusBar,
   Image,
   ScrollView,
   TextInput,
@@ -35,7 +32,6 @@ export default class CreatePost extends Component {
     };
     return (
       <View style={styles.container}>
-        <SafeAreaView style={styles.droidSafeArea} />
         <View style={styles.appTitle}>
           <View style={styles.appIcon}>
             <Image
@@ -84,7 +80,7 @@ export default class CreatePost extends Component {
                 }}
                 arrowStyle={{
                   color: "white",
-                }}  
+                }}
                 onChangeItem={(item) =>
                   this.setState({
                     previewImage: item.value,
@@ -111,10 +107,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "black",
-  },
-  droidSafeArea: {
-    marginTop:
-      Platform.OS === "android" ? StatusBar.currentHeight : RFValue(35),
   },
   appTitle: {
     flex: 0.07,

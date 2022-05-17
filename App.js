@@ -10,7 +10,7 @@ import {
 import { NavigationContainer } from "@react-navigation/native";
 import { Ubuntu_500Medium } from "@expo-google-fonts/ubuntu";
 import * as Font from "expo-font";
-import { RNFValue } from "react-native-responsive-fontsize";
+import { RFValue } from "react-native-responsive-fontsize";
 
 // Files Import
 import DrawerNavigator from "./Navigation/DrawerNavigator";
@@ -56,6 +56,7 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   droidSafeAreaView: {
     flex: 1,
-    margin: Platform.OS === "android" ? StatusBar.currentHeight : RNFValue(25),
+    marginTop:
+      Platform.OS === "android" ? StatusBar.currentHeight : RFValue(35),
   },
 });

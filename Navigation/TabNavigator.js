@@ -11,7 +11,7 @@ import CreatePost from "../Screens/CreatePost";
 
 const Tab = createMaterialBottomTabNavigator();
 
-const BottomTabNavigator = () => {
+const TabNavigator = () => {
   return (
     <Tab.Navigator
       labeled={false}
@@ -58,4 +58,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BottomTabNavigator;
+export default TabNavigator;

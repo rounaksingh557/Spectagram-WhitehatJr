@@ -11,12 +11,13 @@ const Stack = createStackNavigator();
 const StackNavigator = () => {
   return (
     <Stack.Navigator
+      initialRouteName="HomeScreen"
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name="HomeScreen" component={<TabNavigator />} />
-      <Stack.Screen name="PostScreen" component={<PostScreen />} />
+      <Stack.Screen name="HomeScreen" component={TabNavigator} />
+      <Stack.Screen name="PostScreen" component={PostScreen} />
     </Stack.Navigator>
   );
 };
