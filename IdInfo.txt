@@ -1,0 +1,3 @@
+android id: 828829474983-345s2pug26pepi93l8dj2fmte6md2ni0.apps.googleusercontent.com
+ios id: 828829474983-73j6n4bpltj8g184fj4ib2172cqhbdgq.apps.googleusercontent.com
+openssl key: 0f:88:07:71:50:86:88:30:26:0f:ec:b5:1e:b9:a0:5b:48:64:1c:60
