@@ -1,40 +1,49 @@
 // Modules Import
-import React from "react";
-import { StyleSheet, View, Button } from "react-native";
+import React, { Component } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  StatusBar,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import { RFValue } from "react-native-responsive-fontsize";
 import * as Google from "expo-google-app-auth";
 import firebase from "firebase";
 
-export default class LoginScreen extends React.Component {
-  signInWithGoogleAsync = async () => {
-    try {
-      const result = await Google.logInAsync({
-        androidClientId:
-          "828829474983-345s2pug26pepi93l8dj2fmte6md2ni0.apps.googleusercontent.com",
-        iosClientId:
-          "828829474983-73j6n4bpltj8g184fj4ib2172cqhbdgq.apps.googleusercontent.com",
-        scopes: ["profile", "email"],
-        behavior: "web",
-      });
+export default class LoginScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
 
-      if (result.type === "success") {
-        this.onSignIn(result);
-        return result.accessToken;
-      } else {
-        return { cancelled: true };
+  componentDidMount() {}
+
+  isUserEqual = (googleUser, firebaseUser) => {
+    if (firebaseUser) {
+      var providerData = firebaseUser.providerData;
+      for (var i = 0; i < providerData.length; i++) {
+        if (
+          providerData[i].providerId ===
+            firebase.auth.GoogleAuthProvider.PROVIDER_ID &&
+          providerData[i].uid === googleUser.getBasicProfile().getId()
+        ) {
+          return true;
+        }
       }
-    } catch (e) {
-      return { error: true };
-      console.log(e.message);
     }
+    return false;
   };
 
-  onSignIn = (googleuser) => {
+  onSignIn = (googleUser) => {
     var unsubscribe = firebase.auth().onAuthStateChanged((firebaseUser) => {
       unsubscribe();
-      if (!this.isUserEqual(googleuser, firebaseUser)) {
+      if (!this.isUserEqual(googleUser, firebaseUser)) {
         var credential = firebase.auth.GoogleAuthProvider.credential(
-          googleuser.idToken,
-          googleuser.accessToken
+          googleUser.idToken,
+          googleUser.accessToken
         );
         firebase
           .auth()
@@ -67,29 +76,51 @@ export default class LoginScreen extends React.Component {
     });
   };
 
-  isUserEqual = (googleUser, firebaseUser) => {
-    if (firebaseUser) {
-      var providerData = firebaseUser.providerData;
-      for (var i = 0; i < providerData.length; i++) {
-        if (
-          providerData[i].providerId ===
-            firebase.auth.GoogleAuthProvider.PROVIDER_ID &&
-          providerData[i].uid === googleUser.getBasicProfile().getId()
-        ) {
-          return true;
-        }
+  signInWithGoogleAsync = async () => {
+    try {
+      const result = await Google.logInAsync({
+        behavior: "web",
+        androidClientId:
+          "828829474983-345s2pug26pepi93l8dj2fmte6md2ni0.apps.googleusercontent.com",
+        iosClientId:
+          "828829474983-73j6n4bpltj8g184fj4ib2172cqhbdgq.apps.googleusercontent.com",
+        scopes: ["profile", "email"],
+      });
+
+      if (result.type === "success") {
+        this.onSignIn(result);
+        return result.accessToken;
+      } else {
+        return { cancelled: true };
       }
+    } catch (e) {
+      console.log(e.message);
+      return { error: true };
     }
-    return false;
   };
 
   render() {
     return (
       <View style={styles.container}>
-        <Button
-          title="Sign In With Google"
-          onPress={() => this.signInWithGoogleAsync()}
-        ></Button>
+        <View style={styles.appTitle}>
+          <Image
+            source={require("../assets/logo.png")}
+            style={styles.appIcon}
+          ></Image>
+          <Text style={styles.appTitleText}>Spectagram</Text>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => this.signInWithGoogleAsync()}
+          >
+            <Image
+              source={require("../assets/google_icon.png")}
+              style={styles.googleIcon}
+            ></Image>
+            <Text style={styles.googleText}>Sign in with Google</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -98,7 +129,48 @@ export default class LoginScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
+    backgroundColor: "black",
+  },
+  droidSafeArea: {
+    marginTop:
+      Platform.OS === "android" ? StatusBar.currentHeight : RFValue(35),
+  },
+  appTitle: {
+    flex: 0.4,
     justifyContent: "center",
+    alignItems: "center",
+  },
+  appIcon: {
+    width: RFValue(130),
+    height: RFValue(130),
+    resizeMode: "contain",
+  },
+  appTitleText: {
+    color: "white",
+    textAlign: "center",
+    fontSize: RFValue(40),
+  },
+  buttonContainer: {
+    flex: 0.3,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  button: {
+    width: RFValue(250),
+    height: RFValue(50),
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    borderRadius: RFValue(30),
+    backgroundColor: "white",
+  },
+  googleIcon: {
+    width: RFValue(30),
+    height: RFValue(30),
+    resizeMode: "contain",
+  },
+  googleText: {
+    color: "black",
+    fontSize: RFValue(20),
   },
 });
