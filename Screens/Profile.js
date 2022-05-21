@@ -1,19 +1,13 @@
 // Modules Import
-import React, { Component } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-  Image,
-  Switch,
-} from "react-native";
+import React from "react";
+import { View, StyleSheet, Image, Switch } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 import firebase from "firebase";
 
-export default class Profile extends Component {
+// Files Import
+import CustomText from "../Utility/CustomText";
+
+export default class Profile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -25,17 +19,16 @@ export default class Profile extends Component {
   }
 
   toggleSwitch() {
-    const previous_state = this.state.isEnabled;
-    const theme = !this.state.isEnabled ? "dark" : "light";
-    var updates = {};
+    const previousState = this.state.isEnabled;
+    const theme = previousState ? "light" : "dark";
+    const updates = {};
     updates["/users/" + firebase.auth().currentUser.uid + "/current_theme"] =
       theme;
     firebase.database().ref().update(updates);
-    this.setState({ isEnabled: !previous_state, light_theme: previous_state });
-  }
-
-  componentDidMount() {
-    this.fetchUser();
+    this.setState({
+      isEnabled: !previousState,
+      light_theme: previousState,
+    });
   }
 
   async fetchUser() {
@@ -43,23 +36,30 @@ export default class Profile extends Component {
     await firebase
       .database()
       .ref("/users/" + firebase.auth().currentUser.uid)
-      .on("value", function (snapshot) {
+      .on("value", (snapshot) => {
         theme = snapshot.val().current_theme;
         name = `${snapshot.val().first_name} ${snapshot.val().last_name}`;
         image = snapshot.val().profile_picture;
+        this.setState({
+          light_theme: theme === "light" ? true : false,
+          isEnabled: theme === "light" ? false : true,
+          name: name,
+          profile_image: image,
+        });
       });
-    this.setState({
-      light_theme: theme === "light" ? true : false,
-      isEnabled: theme === "light" ? false : true,
-      name: name,
-      profile_image: image,
-    });
+  }
+
+  componentDidMount() {
+    this.fetchUser();
   }
 
   render() {
     return (
-      <View style={styles.container}>
-        <SafeAreaView style={styles.droidSafeArea} />
+      <View
+        style={
+          this.state.light_theme ? styles.containerLight : styles.container
+        }
+      >
         <View style={styles.appTitle}>
           <View style={styles.appIcon}>
             <Image
@@ -68,7 +68,7 @@ export default class Profile extends Component {
             ></Image>
           </View>
           <View style={styles.appTitleTextContainer}>
-            <Text style={styles.appTitleText}>Spectagram</Text>
+            <CustomText design={styles.appTitleText} children={"Spectagram"} />
           </View>
         </View>
         <View style={styles.screenContainer}>
@@ -77,10 +77,10 @@ export default class Profile extends Component {
               source={{ uri: this.state.profile_image }}
               style={styles.profileImage}
             ></Image>
-            <Text style={styles.nameText}>{this.state.name}</Text>
+            <CustomText design={styles.nameText} children={this.state.name} />
           </View>
           <View style={styles.themeContainer}>
-            <Text style={styles.themeText}>Dark Theme</Text>
+            <CustomText design={styles.themeText} children={"Dark Theme"} />
             <Switch
               style={{
                 transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }],
@@ -105,8 +105,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "black",
   },
-  droidSafeArea: {
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  containerLight: {
+    flex: 1,
+    backgroundColor: "white",
   },
   appTitle: {
     flex: 0.07,
@@ -127,7 +128,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   appTitleText: {
-    color: "white",
     fontSize: RFValue(28),
   },
   screenContainer: {
@@ -144,7 +144,6 @@ const styles = StyleSheet.create({
     borderRadius: RFValue(70),
   },
   nameText: {
-    color: "white",
     fontSize: RFValue(40),
     marginTop: RFValue(10),
   },
@@ -155,7 +154,6 @@ const styles = StyleSheet.create({
     marginTop: RFValue(20),
   },
   themeText: {
-    color: "white",
     fontSize: RFValue(20),
     marginRight: RFValue(15),
   },

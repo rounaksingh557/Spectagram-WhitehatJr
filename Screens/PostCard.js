@@ -1,15 +1,36 @@
 // Modules Import
-import React, { Component } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import React from "react";
+import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFValue } from "react-native-responsive-fontsize";
+import CustomText from "../Utility/CustomText";
+import firebase from "firebase";
 
-export default class PostCard extends Component {
+export default class PostCard extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      light_theme: true,
+    };
   }
- 
+
+  async fetchUser() {
+    let theme;
+    await firebase
+      .database()
+      .ref("/users/" + firebase.auth().currentUser.uid)
+      .on("value", (snapshot) => {
+        theme = snapshot.val().current_theme;
+        this.setState({
+          light_theme: theme === "light" ? true : false,
+        });
+      });
+  }
+
+  componentDidMount() {
+    this.fetchUser();
+  }
+
   render() {
     return (
       <TouchableOpacity
@@ -20,7 +41,13 @@ export default class PostCard extends Component {
           })
         }
       >
-        <View style={styles.cardContainer}>
+        <View
+          style={
+            this.state.light_theme
+              ? styles.cardContainerLight
+              : styles.container
+          }
+        >
           <View style={styles.authorContainer}>
             <View style={styles.authorImageContainer}>
               <Image
@@ -29,22 +56,26 @@ export default class PostCard extends Component {
               ></Image>
             </View>
             <View style={styles.authorNameContainer}>
-              <Text style={styles.authorNameText}>
-                {this.props.post.author}
-              </Text>
+              <CustomText
+                design={styles.authorNameText}
+                children={this.props.post.author}
+              />
             </View>
           </View>
           <Image
-            source={require("../assets/image_1.jpg")}
+            source={require("../assets/image_4.jpg")}
             style={styles.postImage}
           />
-          <View style={styles.captionContainer}>
-            <Text style={styles.captionText}>{this.props.post.caption}</Text>
+          <View>
+            <CustomText
+              design={styles.captionText}
+              children={this.props.post.caption}
+            />
           </View>
           <View style={styles.actionContainer}>
             <View style={styles.likeButton}>
               <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
-              <Text style={styles.likeText}>12k</Text>
+              <CustomText design={styles.likeText} children={"12k"} />
             </View>
           </View>
         </View>
@@ -62,6 +93,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#2a2a2a",
     borderRadius: RFValue(20),
     padding: RFValue(20),
+  },
+  cardContainerLight: {
+    margin: RFValue(13),
+    backgroundColor: "#f5f5f5",
+    borderRadius: RFValue(20),
+    padding: RFValue(20),
+    borderWidth: 10,
+    borderColor: "lightyellow",
   },
   authorContainer: {
     flex: 0.1,
@@ -83,7 +122,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   authorNameText: {
-    color: "white",
     fontSize: RFValue(20),
   },
   postImage: {
@@ -93,10 +131,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     height: RFValue(275),
   },
-  captionContainer: {},
   captionText: {
     fontSize: 13,
-    color: "white",
     paddingTop: RFValue(10),
   },
   actionContainer: {
@@ -114,7 +150,6 @@ const styles = StyleSheet.create({
     borderRadius: RFValue(30),
   },
   likeText: {
-    color: "white",
     fontSize: RFValue(25),
     marginLeft: RFValue(5),
   },

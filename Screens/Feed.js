@@ -1,17 +1,21 @@
 // Modules Import
-import React, { Component } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import React from "react";
+import { View, StyleSheet, Image } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 import { FlatList } from "react-native-gesture-handler";
+import firebase from "firebase";
 
 // Files Import
 import PostCard from "./PostCard";
+import CustomText from "../Utility/CustomText";
 let posts = require("./temp_post.json");
 
-export default class Feed extends Component {
+export default class Feed extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      light_theme: true,
+    };
   }
 
   renderItem = ({ item: post }) => {
@@ -20,9 +24,30 @@ export default class Feed extends Component {
 
   keyExtractor = (item, index) => index.toString();
 
+  async fetchUser() {
+    let theme;
+    await firebase
+      .database()
+      .ref("/users/" + firebase.auth().currentUser.uid)
+      .on("value", (snapshot) => {
+        theme = snapshot.val().current_theme;
+        this.setState({
+          light_theme: theme === "light" ? true : false,
+        });
+      });
+  }
+
+  componentDidMount() {
+    this.fetchUser();
+  }
+
   render() {
     return (
-      <View style={styles.container}>
+      <View
+        style={
+          this.state.light_theme ? styles.containerLight : styles.container
+        }
+      >
         <View style={styles.appTitle}>
           <View style={styles.appIcon}>
             <Image
@@ -31,7 +56,7 @@ export default class Feed extends Component {
             ></Image>
           </View>
           <View style={styles.appTitleTextContainer}>
-            <Text style={styles.appTitleText}>Spectagram</Text>
+            <CustomText design={styles.appTitleText} children={"Spectagram"} />
           </View>
         </View>
         <View style={styles.cardContainer}>
@@ -50,6 +75,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "black",
+  },
+  containerLight: {
+    flex: 1,
+    backgroundColor: "white",
   },
   appTitle: {
     flex: 0.07,
@@ -70,7 +99,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   appTitleText: {
-    color: "white",
     fontSize: RFValue(28),
   },
   cardContainer: {

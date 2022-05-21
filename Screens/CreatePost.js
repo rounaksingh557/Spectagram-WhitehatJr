@@ -1,15 +1,12 @@
+// Modules Import
 import React, { Component } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  TextInput,
-} from "react-native";
-
+import { View, StyleSheet, Image, ScrollView, TextInput } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 import DropDownPicker from "react-native-dropdown-picker";
+import firebase from "firebase";
+
+// Files Import
+import CustomText from "../Utility/CustomText";
 
 export default class CreatePost extends Component {
   constructor(props) {
@@ -17,10 +14,26 @@ export default class CreatePost extends Component {
     this.state = {
       previewImage: "image_1",
       dropdownHeight: 40,
+      light_theme: true,
     };
   }
 
-  componentDidMount() {}
+  async fetchUser() {
+    let theme;
+    await firebase
+      .database()
+      .ref("/users/" + firebase.auth().currentUser.uid)
+      .on("value", (snapshot) => {
+        theme = snapshot.val().current_theme;
+        this.setState({
+          light_theme: theme === "light" ? true : false,
+        });
+      });
+  }
+
+  componentDidMount() {
+    this.fetchUser();
+  }
 
   render() {
     let preview_images = {
@@ -31,7 +44,11 @@ export default class CreatePost extends Component {
       image_5: require("../assets/image_5.jpg"),
     };
     return (
-      <View style={styles.container}>
+      <View
+        style={
+          this.state.light_theme ? styles.containerLight : styles.container
+        }
+      >
         <View style={styles.appTitle}>
           <View style={styles.appIcon}>
             <Image
@@ -40,7 +57,7 @@ export default class CreatePost extends Component {
             ></Image>
           </View>
           <View style={styles.appTitleTextContainer}>
-            <Text style={styles.appTitleText}>New Post</Text>
+            <CustomText design={styles.appTitleText} children={"New Post"} />
           </View>
         </View>
         <View style={styles.fieldsContainer}>
@@ -74,9 +91,13 @@ export default class CreatePost extends Component {
                 itemStyle={{
                   justifyContent: "flex-start",
                 }}
-                dropDownStyle={{ backgroundColor: "#2a2a2a" }}
+                dropDownStyle={
+                  this.state.light_theme
+                    ? { backgroundColor: "#f5f5f5" }
+                    : { backgroundColor: "#2a2a2a" }
+                }
                 labelStyle={{
-                  color: "white",
+                  color: this.state.light_theme ? "black" : "white",
                 }}
                 arrowStyle={{
                   color: "white",
@@ -90,10 +111,14 @@ export default class CreatePost extends Component {
             </View>
 
             <TextInput
-              style={styles.inputFont}
+              style={
+                this.state.light_theme
+                  ? styles.inputFontLight
+                  : styles.inputFont
+              }
               onChangeText={(caption) => this.setState({ caption })}
               placeholder={"Caption"}
-              placeholderTextColor="white"
+              placeholderTextColor={this.state.light_theme ? "black" : "white"}
             />
           </ScrollView>
         </View>
@@ -107,6 +132,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "black",
+  },
+  containerLight: {
+    flex: 1,
+    backgroundColor: "white",
   },
   appTitle: {
     flex: 0.07,
@@ -127,7 +156,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   appTitleText: {
-    color: "white",
     fontSize: RFValue(28),
   },
   fieldsContainer: {
@@ -148,5 +176,15 @@ const styles = StyleSheet.create({
     borderRadius: RFValue(10),
     paddingLeft: RFValue(10),
     color: "white",
+    marginVertical: RFValue(10),
+  },
+  inputFontLight: {
+    height: RFValue(40),
+    borderColor: "#dedede",
+    borderWidth: RFValue(1),
+    borderRadius: RFValue(10),
+    paddingLeft: RFValue(10),
+    color: "black",
+    marginVertical: RFValue(10),
   },
 });

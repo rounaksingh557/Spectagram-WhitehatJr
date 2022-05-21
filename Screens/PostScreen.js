@@ -1,22 +1,36 @@
-import React, { Component } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-  Image,
-  ScrollView,
-} from "react-native";
-
+// Modules Import
+import React from "react";
+import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import firebase from "firebase";
 
-export default class PostScreen extends Component {
+// Files Import
+import CustomText from "../Utility/CustomText";
+
+export default class PostScreen extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      light_theme: true,
+    };
+  }
+
+  async fetchUser() {
+    let theme;
+    await firebase
+      .database()
+      .ref("/users/" + firebase.auth().currentUser.uid)
+      .on("value", (snapshot) => {
+        theme = snapshot.val().current_theme;
+        this.setState({
+          light_theme: theme === "light" ? true : false,
+        });
+      });
+  }
+
+  componentDidMount() {
+    this.fetchUser();
   }
 
   render() {
@@ -24,8 +38,11 @@ export default class PostScreen extends Component {
       this.props.navigation.navigate("Home");
     } else {
       return (
-        <View style={styles.container}>
-          <SafeAreaView style={styles.droidSafeArea} />
+        <View
+          style={
+            this.state.light_theme ? styles.containerLight : styles.container
+          }
+        >
           <View style={styles.appTitle}>
             <View style={styles.appIcon}>
               <Image
@@ -34,11 +51,18 @@ export default class PostScreen extends Component {
               ></Image>
             </View>
             <View style={styles.appTitleTextContainer}>
-              <Text style={styles.appTitleText}>Spectagram</Text>
+              <CustomText
+                design={styles.appTitleText}
+                children={"Spectagram"}
+              />
             </View>
           </View>
           <View style={styles.postContainer}>
-            <ScrollView style={styles.postCard}>
+            <ScrollView
+              style={
+                this.state.light_theme ? styles.postCardLight : styles.postCard
+              }
+            >
               <View style={styles.authorContainer}>
                 <View style={styles.authorImageContainer}>
                   <Image
@@ -47,9 +71,10 @@ export default class PostScreen extends Component {
                   ></Image>
                 </View>
                 <View style={styles.authorNameContainer}>
-                  <Text style={styles.authorNameText}>
-                    {this.props.route.params.author}
-                  </Text>
+                  <CustomText
+                    design={styles.authorNameText}
+                    children={this.props.route.params.post.author}
+                  />
                 </View>
               </View>
               <Image
@@ -57,14 +82,15 @@ export default class PostScreen extends Component {
                 style={styles.postImage}
               />
               <View style={styles.captionContainer}>
-                <Text style={styles.captionText}>
-                  {this.props.route.params.caption}
-                </Text>
+                <CustomText
+                  design={styles.captionText}
+                  children={this.props.route.params.post.caption}
+                />
               </View>
               <View style={styles.actionContainer}>
                 <View style={styles.likeButton}>
                   <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
-                  <Text style={styles.likeText}>12k</Text>
+                  <CustomText design={styles.likeText} children={"12k"} />
                 </View>
               </View>
             </ScrollView>
@@ -80,9 +106,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "black",
   },
-  droidSafeArea: {
-    marginTop:
-      Platform.OS === "android" ? StatusBar.currentHeight : RFValue(35),
+  containerLight: {
+    flex: 1,
+    backgroundColor: "white",
   },
   appTitle: {
     flex: 0.07,
@@ -103,7 +129,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   appTitleText: {
-    color: "white",
     fontSize: RFValue(28),
   },
   postContainer: {
@@ -112,6 +137,11 @@ const styles = StyleSheet.create({
   postCard: {
     margin: RFValue(20),
     backgroundColor: "#2a2a2a",
+    borderRadius: RFValue(20),
+  },
+  postCardLight: {
+    margin: RFValue(20),
+    backgroundColor: "white",
     borderRadius: RFValue(20),
   },
   actionContainer: {
@@ -129,7 +159,6 @@ const styles = StyleSheet.create({
     borderRadius: RFValue(30),
   },
   likeText: {
-    color: "white",
     fontSize: RFValue(25),
     marginLeft: RFValue(5),
   },
@@ -155,7 +184,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   authorNameText: {
-    color: "white",
     fontSize: RFValue(20),
   },
   postImage: {
@@ -171,7 +199,6 @@ const styles = StyleSheet.create({
   },
   captionText: {
     fontSize: 13,
-    color: "white",
     paddingTop: RFValue(10),
   },
 });

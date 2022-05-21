@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFValue } from "react-native-responsive-fontsize";
+import firebase from "firebase";
 
 // Files Import
 import Feed from "../Screens/Feed";
@@ -12,10 +13,27 @@ import CreatePost from "../Screens/CreatePost";
 const Tab = createMaterialBottomTabNavigator();
 
 const TabNavigator = () => {
+  const [theme, setTheme] = React.useState("");
+
+  async function fetchUser() {
+    let theme;
+    await firebase
+      .database()
+      .ref("/users/" + firebase.auth().currentUser.uid)
+      .on("value", (snapshot) => {
+        theme = snapshot.val().current_theme;
+        setTheme(theme);
+      });
+  }
+
+  React.useEffect(() => fetchUser(), []);
+
   return (
     <Tab.Navigator
       labeled={false}
-      barStyle={styles.bottomTabStyle}
+      barStyle={
+        theme === "light" ? styles.bottomTabStyleLight : styles.bottomTabStyle
+      }
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
@@ -46,6 +64,14 @@ const TabNavigator = () => {
 const styles = StyleSheet.create({
   bottomTabStyle: {
     backgroundColor: "#2a2a2a",
+    height: "8%",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: "hidden",
+    position: "absolute",
+  },
+  bottomTabStyleLight: {
+    backgroundColor: "lightyellow",
     height: "8%",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
