@@ -14,6 +14,7 @@ const Tab = createMaterialBottomTabNavigator();
 
 const TabNavigator = () => {
   const [theme, setTheme] = React.useState("");
+  const [isUpdated, setIsUpdated] = React.useState(false);
 
   async function fetchUser() {
     let theme;
@@ -27,6 +28,22 @@ const TabNavigator = () => {
   }
 
   React.useEffect(() => fetchUser(), []);
+
+  const renderFeed = (props) => {
+    return <Feed setUpdateToFalse={removeUpdate} {...props} />;
+  };
+
+  const renderCreatePost = (props) => {
+    return <CreatePost setUpdateToTrue={changeUpdate} {...props} />;
+  };
+
+  const changeUpdate = () => {
+    setIsUpdated(true);
+  };
+
+  const removeUpdate = () => {
+    setIsUpdated(false);
+  };
 
   return (
     <Tab.Navigator
@@ -55,8 +72,16 @@ const TabNavigator = () => {
       activeColor={"#ee8249"}
       inactiveColor={"gray"}
     >
-      <Tab.Screen name="Feed" component={Feed} />
-      <Tab.Screen name="CreatePost" component={CreatePost} />
+      <Tab.Screen
+        name="Feed"
+        component={renderFeed}
+        options={{ unmountOnBlur: true }}
+      />
+      <Tab.Screen
+        name="CreatePost"
+        component={renderCreatePost}
+        options={{ unmountOnBlur: true }}
+      />
     </Tab.Navigator>
   );
 };

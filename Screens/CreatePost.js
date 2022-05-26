@@ -1,6 +1,14 @@
 // Modules Import
-import React, { Component } from "react";
-import { View, StyleSheet, Image, ScrollView, TextInput } from "react-native";
+import React from "react";
+import {
+  View,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TextInput,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 import DropDownPicker from "react-native-dropdown-picker";
 import firebase from "firebase";
@@ -8,27 +16,62 @@ import firebase from "firebase";
 // Files Import
 import CustomText from "../Utility/CustomText";
 
-export default class CreatePost extends Component {
+export default class CreatePost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       previewImage: "image_1",
       dropdownHeight: 40,
       light_theme: true,
+      name: "",
+      profile_image: "",
+      caption: "",
     };
   }
-
   async fetchUser() {
-    let theme;
+    let theme, name, image;
     await firebase
       .database()
       .ref("/users/" + firebase.auth().currentUser.uid)
-      .on("value", (snapshot) => {
+      .on("value", function (snapshot) {
         theme = snapshot.val().current_theme;
-        this.setState({
-          light_theme: theme === "light" ? true : false,
-        });
+        name = `${snapshot.val().first_name} ${snapshot.val().last_name}`;
+        image = snapshot.val().profile_picture;
       });
+    this.setState({
+      light_theme: theme === "light" ? true : false,
+      name: name,
+      profile_image: image,
+    });
+  }
+
+  async addPost() {
+    if (this.state.caption) {
+      let postData = {
+        preview_image: this.state.previewImage,
+        caption: this.state.caption,
+        author: firebase.auth().currentUser.displayName,
+        created_on: new Date(),
+        author_id: firebase.auth().currentUser.uid,
+        profile_image: this.state.profile_image,
+        like: 0,
+      };
+
+      await firebase
+        .database()
+        .ref("/posts/" + Math.random().toString(36).slice(2))
+        .set(postData)
+        .then(function (snapshot) {});
+      this.props.setUpdateToTrue();
+      this.props.navigation.navigate("Feed");
+    } else {
+      Alert.alert(
+        "Error",
+        "All fields are required",
+        [{ text: "OK", onPress: () => console.log("OK Pressed") }],
+        { cancelable: false }
+      );
+    }
   }
 
   componentDidMount() {
@@ -120,6 +163,19 @@ export default class CreatePost extends Component {
               placeholder={"Caption"}
               placeholderTextColor={this.state.light_theme ? "black" : "white"}
             />
+
+            <View style={styles.submitButton}>
+              <TouchableOpacity
+                onPress={() => this.addPost()}
+                style={
+                  this.state.light_theme
+                    ? styles.mainButtonLight
+                    : styles.mainButton
+                }
+              >
+                <CustomText children={"Submit"} />
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         </View>
         <View style={{ flex: 0.08 }} />
@@ -186,5 +242,26 @@ const styles = StyleSheet.create({
     paddingLeft: RFValue(10),
     color: "black",
     marginVertical: RFValue(10),
+  },
+  submitButton: {
+    marginTop: RFValue(10),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mainButton: {
+    width: "90%",
+    height: RFValue(40),
+    borderRadius: RFValue(10),
+    backgroundColor: "#841584",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  mainButtonLight: {
+    width: "90%",
+    height: RFValue(40),
+    borderRadius: RFValue(10),
+    backgroundColor: "gray",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

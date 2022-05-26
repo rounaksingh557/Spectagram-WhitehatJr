@@ -15,6 +15,7 @@ export default class Feed extends React.Component {
     super(props);
     this.state = {
       light_theme: true,
+      posts: [],
     };
   }
 
@@ -25,20 +26,50 @@ export default class Feed extends React.Component {
   keyExtractor = (item, index) => index.toString();
 
   async fetchUser() {
-    let theme;
+    let theme, name, image;
     await firebase
       .database()
       .ref("/users/" + firebase.auth().currentUser.uid)
-      .on("value", (snapshot) => {
+      .on("value", function (snapshot) {
         theme = snapshot.val().current_theme;
-        this.setState({
-          light_theme: theme === "light" ? true : false,
-        });
+        name = `${snapshot.val().first_name} ${snapshot.val().last_name}`;
+        image = snapshot.val().profile_picture;
       });
+    this.setState({
+      light_theme: theme === "light" ? true : false,
+      name: name,
+      profile_image: image,
+    });
   }
+
+  fetchPosts = () => {
+    firebase
+      .database()
+      .ref("/posts/")
+      .on(
+        "value",
+        (snapshot) => {
+          let posts = [];
+          if (snapshot.val()) {
+            Object.keys(snapshot.val()).forEach(function (key) {
+              posts.push({
+                key: key,
+                value: snapshot.val()[key],
+              });
+            });
+          }
+          this.setState({ posts: posts });
+          this.props.setUpdateToFalse();
+        },
+        function (errorObject) {
+          console.log("The read failed: " + errorObject.code);
+        }
+      );
+  };
 
   componentDidMount() {
     this.fetchUser();
+    this.fetchPosts();
   }
 
   render() {
@@ -59,13 +90,22 @@ export default class Feed extends React.Component {
             <CustomText design={styles.appTitleText} children={"Spectagram"} />
           </View>
         </View>
-        <View style={styles.cardContainer}>
-          <FlatList
-            keyExtractor={this.keyExtractor}
-            data={posts}
-            renderItem={this.renderItem}
-          />
-        </View>
+        {!this.state.posts[0] ? (
+          <View style={styles.noPosts}>
+            <CustomText
+              children={"No Post Available"}
+              design={styles.noPostText}
+            />
+          </View>
+        ) : (
+          <View style={styles.cardContainer}>
+            <FlatList
+              keyExtractor={this.keyExtractor}
+              data={this.state.posts}
+              renderItem={this.renderItem}
+            />
+          </View>
+        )}
       </View>
     );
   }
@@ -103,5 +143,13 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     flex: 0.85,
+  },
+  noPosts: {
+    flex: 0.85,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noPostText: {
+    fontSize: RFValue(20),
   },
 });

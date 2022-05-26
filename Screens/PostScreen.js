@@ -1,6 +1,6 @@
 // Modules Import
 import React from "react";
-import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+import { View, StyleSheet, Image, ScrollView } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import firebase from "firebase";
@@ -34,6 +34,13 @@ export default class PostScreen extends React.Component {
   }
 
   render() {
+    let images = {
+      image_1: require("../assets/image_1.jpg"),
+      image_2: require("../assets/image_2.jpg"),
+      image_3: require("../assets/image_3.jpg"),
+      image_4: require("../assets/image_4.jpg"),
+      image_5: require("../assets/image_5.jpg"),
+    };
     if (!this.props.route.params) {
       this.props.navigation.navigate("Home");
     } else {
@@ -66,7 +73,7 @@ export default class PostScreen extends React.Component {
               <View style={styles.authorContainer}>
                 <View style={styles.authorImageContainer}>
                   <Image
-                    source={require("../assets/profile_img.png")}
+                    source={{ uri: this.props.route.params.post.profile_image }}
                     style={styles.profileImage}
                   ></Image>
                 </View>
@@ -78,7 +85,7 @@ export default class PostScreen extends React.Component {
                 </View>
               </View>
               <Image
-                source={require("../assets/image_1.jpg")}
+                source={images[this.props.route.params.post.preview_image]}
                 style={styles.postImage}
               />
               <View style={styles.captionContainer}>

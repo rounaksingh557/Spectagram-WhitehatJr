@@ -11,6 +11,8 @@ export default class PostCard extends React.Component {
     super(props);
     this.state = {
       light_theme: true,
+      post_id: this.props.post.key,
+      post_data: this.props.post.value,
     };
   }
 
@@ -32,12 +34,20 @@ export default class PostCard extends React.Component {
   }
 
   render() {
+    let post = this.state.post_data;
+    let images = {
+      image_1: require("../assets/image_1.jpg"),
+      image_2: require("../assets/image_2.jpg"),
+      image_3: require("../assets/image_3.jpg"),
+      image_4: require("../assets/image_4.jpg"),
+      image_5: require("../assets/image_5.jpg"),
+    };
     return (
       <TouchableOpacity
         style={styles.container}
         onPress={() =>
           this.props.navigation.navigate("PostScreen", {
-            post: this.props.post,
+            post: post,
           })
         }
       >
@@ -51,26 +61,20 @@ export default class PostCard extends React.Component {
           <View style={styles.authorContainer}>
             <View style={styles.authorImageContainer}>
               <Image
-                source={require("../assets/profile_img.png")}
+                source={{ uri: post.profile_image }}
                 style={styles.profileImage}
               ></Image>
             </View>
             <View style={styles.authorNameContainer}>
               <CustomText
                 design={styles.authorNameText}
-                children={this.props.post.author}
+                children={post.author}
               />
             </View>
           </View>
-          <Image
-            source={require("../assets/image_4.jpg")}
-            style={styles.postImage}
-          />
+          <Image source={images[post.preview_image]} style={styles.postImage} />
           <View>
-            <CustomText
-              design={styles.captionText}
-              children={this.props.post.caption}
-            />
+            <CustomText design={styles.captionText} children={post.caption} />
           </View>
           <View style={styles.actionContainer}>
             <View style={styles.likeButton}>
@@ -96,11 +100,17 @@ const styles = StyleSheet.create({
   },
   cardContainerLight: {
     margin: RFValue(13),
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "white",
     borderRadius: RFValue(20),
+    shadowColor: "rgb(0, 0, 0)",
+    shadowOffset: {
+      width: 3,
+      height: 3,
+    },
+    shadowOpacity: RFValue(0.5),
+    shadowRadius: RFValue(5),
+    elevation: RFValue(2),
     padding: RFValue(20),
-    borderWidth: 10,
-    borderColor: "lightyellow",
   },
   authorContainer: {
     flex: 0.1,
