@@ -13,6 +13,8 @@ export default class PostCard extends React.Component {
       light_theme: true,
       post_id: this.props.post.key,
       post_data: this.props.post.value,
+      is_liked: this.props.post.value.is_liked,
+      likes: 0,
     };
   }
 
@@ -29,12 +31,58 @@ export default class PostCard extends React.Component {
       });
   }
 
+  likeActive = () => {
+    if (this.state.is_liked) {
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.state.post_id)
+        .child("likes")
+        .set(firebase.database.ServerValue.increment(-1));
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.state.post_id)
+        .child("is_liked")
+        .set(false);
+    } else {
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.state.post_id)
+        .child("likes")
+        .set(firebase.database.ServerValue.increment(1));
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.state.post_id)
+        .child("is_liked")
+        .set(true);
+    }
+  };
+
+  fetchPost = () => {
+    firebase
+      .database()
+      .ref("/posts/" + this.state.post_id)
+      .on("value", (snapshot) => {
+        this.setState({
+          is_liked: snapshot.val().is_liked,
+          likes: snapshot.val().likes,
+        });
+      });
+  };
+
   componentDidMount() {
     this.fetchUser();
+    this.fetchPost();
   }
 
   render() {
     let post = this.state.post_data;
+    let id = this.state.post_id;
+    let likes = this.state.likes;
+    let is_liked = this.state.is_liked;
     let images = {
       image_1: require("../assets/image_1.jpg"),
       image_2: require("../assets/image_2.jpg"),
@@ -48,6 +96,9 @@ export default class PostCard extends React.Component {
         onPress={() =>
           this.props.navigation.navigate("PostScreen", {
             post: post,
+            id: id,
+            likes: likes,
+            is_liked: is_liked,
           })
         }
       >
@@ -77,10 +128,19 @@ export default class PostCard extends React.Component {
             <CustomText design={styles.captionText} children={post.caption} />
           </View>
           <View style={styles.actionContainer}>
-            <View style={styles.likeButton}>
-              <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
-              <CustomText design={styles.likeText} children={"12k"} />
-            </View>
+            <TouchableOpacity
+              onPress={() => this.likeActive()}
+              style={
+                this.state.is_liked
+                  ? styles.likeButtonLiked
+                  : styles.likeButtonDisliked
+              }
+            >
+              <View style={styles.likeButton}>
+                <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
+                <CustomText design={styles.likeText} children={this.state.likes} />
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
@@ -162,5 +222,24 @@ const styles = StyleSheet.create({
   likeText: {
     fontSize: RFValue(25),
     marginLeft: RFValue(5),
+  },
+  likeButtonLiked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "#eb3948",
+    borderRadius: RFValue(30),
+  },
+  likeButtonDisliked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    borderColor: "#eb3948",
+    borderWidth: 2,
+    borderRadius: RFValue(30),
   },
 });

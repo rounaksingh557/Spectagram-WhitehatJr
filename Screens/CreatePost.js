@@ -55,6 +55,7 @@ export default class CreatePost extends React.Component {
         author_id: firebase.auth().currentUser.uid,
         profile_image: this.state.profile_image,
         like: 0,
+        is_liked: false
       };
 
       await firebase

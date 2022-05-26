@@ -1,6 +1,12 @@
 // Modules Import
 import React from "react";
-import { View, StyleSheet, Image, ScrollView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import firebase from "firebase";
@@ -13,6 +19,8 @@ export default class PostScreen extends React.Component {
     super(props);
     this.state = {
       light_theme: true,
+      likes: this.props.route.params.likes,
+      is_liked: this.props.route.params.is_liked,
     };
   }
 
@@ -29,8 +37,51 @@ export default class PostScreen extends React.Component {
       });
   }
 
+  fetchPost = () => {
+    firebase
+      .database()
+      .ref("/posts/" + this.props.route.params.id)
+      .on("value", (snapshot) => {
+        this.setState({
+          is_liked: snapshot.val().is_liked,
+          likes: snapshot.val().likes,
+        });
+      });
+  };
+
+  likeActive = () => {
+    if (this.state.is_liked) {
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.props.route.params.id)
+        .child("likes")
+        .set(firebase.database.ServerValue.increment(-1));
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.props.route.params.id)
+        .child("is_liked")
+        .set(false);
+    } else {
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.props.route.params.id)
+        .child("likes")
+        .set(firebase.database.ServerValue.increment(1));
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.props.route.params.id)
+        .child("is_liked")
+        .set(true);
+    }
+  };
+
   componentDidMount() {
     this.fetchUser();
+    this.fetchPost();
   }
 
   render() {
@@ -95,10 +146,26 @@ export default class PostScreen extends React.Component {
                 />
               </View>
               <View style={styles.actionContainer}>
-                <View style={styles.likeButton}>
-                  <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
-                  <CustomText design={styles.likeText} children={"12k"} />
-                </View>
+                <TouchableOpacity
+                  onPress={() => this.likeActive()}
+                  style={
+                    this.state.is_liked
+                      ? styles.likeButtonLiked
+                      : styles.likeButtonDisliked
+                  }
+                >
+                  <View style={styles.likeButton}>
+                    <Ionicons
+                      name={"heart"}
+                      size={RFValue(30)}
+                      color={"white"}
+                    />
+                    <CustomText
+                      design={styles.likeText}
+                      children={this.state.likes}
+                    />
+                  </View>
+                </TouchableOpacity>
               </View>
             </ScrollView>
           </View>
@@ -207,5 +274,24 @@ const styles = StyleSheet.create({
   captionText: {
     fontSize: 13,
     paddingTop: RFValue(10),
+  },
+  likeButtonLiked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "#eb3948",
+    borderRadius: RFValue(30),
+  },
+  likeButtonDisliked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    borderColor: "#eb3948",
+    borderWidth: 2,
+    borderRadius: RFValue(30),
   },
 });
